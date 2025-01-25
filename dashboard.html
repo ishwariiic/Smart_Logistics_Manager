@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Logistics Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            background-color: #FFF0F5; 
+            font-family: 'Arial', sans-serif;
+        }
+        .peach-gradient {
+            background: linear-gradient(135deg, #FFE4E1, #FFC0CB);
+        }
+        .card { 
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        #map { 
+            height: 250px; 
+            border-radius: 12px; 
+        }
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover {
+            color: #FF69B4;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-pink-50">
+    <header class="bg-white text-center py-4 shadow-md">
+        <nav class="container mx-auto flex justify-between items-center">
+            <div class="text-2xl font-bold text-black">LogiTrack</div>
+            <div class="flex space-x-6 text-black">
+                <a href="#" class="nav-item">Home</a>
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="index.html" class="nav-item">GPS-Tracking</a>
+                <a href="#" class="nav-item">Monitoring</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card p-6 hover:shadow-lg">
+                <h2 class="text-2xl font-bold text-pink-600 mb-4">Shipment Overview</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="font-medium">Total Shipments</span>
+                        <span class="text-pink-600">256</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Completed</span>
+                        <span class="text-green-500">189</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Pending</span>
+                        <span class="text-orange-500">67</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Courier- DHLEPRESS</span>
+                        <span class="font-medium">A-4</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Total Amount to be paid</span>
+                        <span class="font-medium">2000</span>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-pink-600 mb-4">Shipment Distribution</h2>
+                <canvas id="shipmentPieChart"></canvas>
+            </div>
+
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-pink-600 mb-4">Performance Metrics</h2>
+                <canvas id="performanceBarChart"></canvas>
+            </div>
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card p-6 flex items-center">
+                <div class="w-full">
+                    <h2 class="text-2xl font-bold text-pink-600 mb-4">Current Shipment</h2>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span>Tracking #</span>
+                            <span class="font-semibold">#3565432</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Status</span>
+                            <span class="text-green-500 font-semibold">In Transit</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Estimated Arrival</span>
+                            <span>2 hrs 15 mins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-pink-600 mb-4">Shipment Route</h2>
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const map = L.map('map').setView([20.5937, 78.9629], 8);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            L.marker([20.5937, 78.9629]).addTo(map)
+                .bindPopup('Pickup: 234 MG Road, PUNE CANT.');
+
+            L.marker([18.5204, 73.8567]).addTo(map)
+                .bindPopup('Delivery: 3432 FC Road, Larsen G.T Lmt.');
+
+            new Chart(document.getElementById('shipmentPieChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Delivered', 'In Transit', 'Pending'],
+                    datasets: [{
+                        data: [189, 67, 40],
+                        backgroundColor: ['#FF69B4', '#FFA07A', '#DDA0DD']
+                    }]
+                }
+            });
+
+            
+            new Chart(document.getElementById('performanceBarChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                    datasets: [{
+                        label: 'On-Time Deliveries (%)',
+                        data: [85, 92, 88, 95, 90],
+                        backgroundColor: '#FF1493'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
